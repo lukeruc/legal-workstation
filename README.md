@@ -214,9 +214,26 @@ git clone https://github.com/lukeruc/rule-builder.git .claude/skills/rule-builde
 
 ---
 
+## 与其它仓库的关系
+
+以下仓库的功能已整合进本项目，在 `modules/` 中统一开发：
+
+| 仓库 | 在 `modules/` 中的位置 | 说明 |
+|------|----------------------|------|
+| contract-review | `modules/contract-review/` | 合同审核主应用，EPC 三层架构 |
+| contract-analyze | `modules/contract-analyze/` | 合同结构分析，PM 委托模式 |
+| rule-builder | `modules/rule-builder/` | 审查规则生成，交互式问答 |
+| mdconverter | `modules/mdconverter/` | 文档格式转换（PDF/DOCX→MD） |
+| yd-law | `modules/yd-law/` | 法律数据检索 |
+| qcc | `modules/qcc/` | 企业工商信息查询 |
+
+这些模块的功能现在统一在 `legal-workstation` 中开发和维护。成熟后提取为独立仓库，作为 Claude Code skill 安装到用户的 `.claude/skills/` 下。模块之间互不依赖，只认基础设施的路径契约。
+
+---
+
 ## 开发
 
-本仓库包含基础设施层和模块开发副本。功能模块成熟后提取为独立仓库。`coldstart/` 是发行物——用户只关心这个目录。`CLAUDE.md` 在本仓库存在但不进入发行物（发行物使用 `coldstart/CLAUDE.md`）。
+本仓库是 monorepo——`coldstart/` 是发行物，`modules/` 是模块开发副本。`CLAUDE.md` 仅用于本仓库开发，不进入发行物（发行物使用 `coldstart/CLAUDE.md`）。
 
 ## License
 
