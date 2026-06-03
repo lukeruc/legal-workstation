@@ -77,8 +77,6 @@ playbook/                          # 操作规程
 
 ### 审查合同
 
-安装 contract-review skill 后：
-
 ```
 /contract-review path/to/合同.docx
 ```
@@ -91,8 +89,6 @@ Agent 自动判断简单/复杂模式，匹配审查规则，产出审核意见�
 
 ### 分析合同结构
 
-安装 contract-analyze skill 后：
-
 ```
 /contract-analyze path/to/合同.md
 ```
@@ -100,8 +96,6 @@ Agent 自动判断简单/复杂模式，匹配审查规则，产出审核意见�
 接受 Markdown 格式合同，产出结构化文档集：当事人画像、术语词典、条款分析、交叉引用映射、冲突检测。不改合同、不做法律判断。适用于需要深入理解一份复杂合同时。
 
 ### 生成审查规则
-
-安装 rule-builder skill 后：
 
 ```
 /rule-builder path/to/模板.docx
@@ -116,27 +110,6 @@ Agent 自动判断简单/复杂模式，匹配审查规则，产出审核意见�
 ```
 
 扫描已完成会话，生成工作记录，更新统计缓存。可选归档到 `archive/`。
-
----
-
-## 安装功能模块
-
-功能模块是独立的 Git 仓库，安装到 `.claude/skills/`：
-
-```bash
-# 合同审核（contract-review — 核心模块）
-git clone https://github.com/lukeruc/contract-review.git .claude/skills/contract-review
-
-# 合同分析（contract-analyze）
-git clone https://github.com/lukeruc/contract-analyze.git .claude/skills/contract-analyze
-
-# 审核规则生成（rule-builder）
-git clone https://github.com/lukeruc/rule-builder.git .claude/skills/rule-builder
-```
-
-工具 skill（mdconverter、yd-law、qcc）同理。
-
-模块只依赖路径契约——不需要修改本工作区的任何文件。
 
 ---
 
@@ -185,38 +158,18 @@ git clone https://github.com/lukeruc/rule-builder.git .claude/skills/rule-builde
 
 ---
 
-## 依赖
+## 外部依赖
 
-### 必需的
+- [Claude Code](https://claude.ai/code) — 运行时
+- [agentdocx](https://github.com/lukeruc/agentdocx) — .docx 读写与修订模式（MCP server，需单独安装）
 
-- [Claude Code](https://claude.ai/code) — 运行时。所有功能跑在 Claude Code 之上。
-
-### 功能模块（按需安装）
-
-基础设施层是骨架，功能模块是肌肉。安装你需要的：
-
-| 模块 | 用途 | 安装方式 |
-|------|------|---------|
-| contract-review | 合同审核 | `git clone` 到 `.claude/skills/` |
-| contract-analyze | 合同结构分析 | 同上 |
-| rule-builder | 审查规则生成 | 同上 |
-
-### 工具（按需安装）
-
-| 工具 | 用途 | 协议 |
-|------|------|------|
-| agentdocx | .docx 读写、修订模式、批注 | MCP server |
-| mdconverter | PDF/DOCX/图片 → Markdown | Claude Code skill |
-| yd-law | 案例、法规检索 | Claude Code skill |
-| qcc | 企业工商信息查询 | Claude Code skill |
-
-工具 skill 同样安装到 `.claude/skills/`，agentdocx 通过 MCP 协议连接。
+功能模块（contract-review、contract-analyze、rule-builder）和工具 skill（mdconverter、yd-law、qcc）已包含在本仓库中，见下方"与其它仓库的关系"。
 
 ---
 
 ## 与其它仓库的关系
 
-以下仓库的功能已整合进本项目，在 `modules/` 中统一开发：
+以下仓库的功能已整合进本项目，在 `modules/` 中统一开发和维护：
 
 | 仓库 | 在 `modules/` 中的位置 | 说明 |
 |------|----------------------|------|
@@ -227,7 +180,14 @@ git clone https://github.com/lukeruc/rule-builder.git .claude/skills/rule-builde
 | yd-law | `modules/yd-law/` | 法律数据检索 |
 | qcc | `modules/qcc/` | 企业工商信息查询 |
 
-这些模块的功能现在统一在 `legal-workstation` 中开发和维护。成熟后提取为独立仓库，作为 Claude Code skill 安装到用户的 `.claude/skills/` 下。模块之间互不依赖，只认基础设施的路径契约。
+使用方式：将对应模块目录复制到工作区的 `.claude/skills/` 下即可。例如：
+
+```bash
+cp -r modules/contract-review ~/my-legal-work/.claude/skills/
+cp -r modules/contract-analyze ~/my-legal-work/.claude/skills/
+```
+
+成熟后各模块将提取为独立仓库，届时可通过 `git clone` 直接安装。模块之间互不依赖，只认基础设施的路径契约。
 
 ---
 
