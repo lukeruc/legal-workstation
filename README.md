@@ -2,118 +2,64 @@
 
 ## 愿景
 
-**让律师从操作者变成导演。**
+**让律师从操作者变成导演。** AI 负责执行（读合同、查法规、写意见、做修订），律师负责判断（定标准、做决策、最终签字）。
 
-法律 AI 工作站不是"用 AI 辅助律师"，是让律师像导演一样工作——AI 负责执行（读合同、查法规、写意见、做修订），律师负责判断（定标准、做决策、最终签字）。
-
----
-
-## 是什么
-
-Legal Workstation 跑在 [Claude Code](https://claude.ai/code) 之上。它包含三层：
-
-| 层 | 说明 | 当前状态 |
-|----|------|---------|
-| **基础设施层** | CLAUDE.md（人格+路由）、用户档案、操作规程（playbook）、工作记录系统 | 可用 |
-| **功能模块层** | 合同审核（contract-review）、合同分析（contract-analyze）、规则生成（rule-builder） | 可用 |
-| **工具层** | 文档转换（mdconverter）、法律检索（yd-law）、企业查询（qcc）、Word 修订（agentdocx） | 可用 |
-
-功能模块之间互不依赖。每个模块只认基础设施层的路径和字段——这叫"路径契约"。新增一个模块不需要修改任何现有代码。
+跑在 [Claude Code](https://claude.ai/code) 之上。
 
 ---
 
-## 安装
+## 快速开始
 
-你的工作目录是一个普通的文件夹。安装就是把发行物复制进去：
+### 1. 安装
 
 ```bash
-mkdir ~/my-legal-work
-cd ~/my-legal-work
+mkdir ~/my-legal-work && cd ~/my-legal-work
 git clone https://github.com/lukeruc/legal-workstation.git /tmp/legal-workstation
 cp -r /tmp/legal-workstation/coldstart/. ./
 rm -rf /tmp/legal-workstation
 ```
 
-安装后目录内容：
+功能模块和工具 skill 在仓库 `modules/` 下，按需复制到 `.claude/skills/`：
+
+```bash
+cp -r /tmp/legal-workstation/modules/contract-review ~/my-legal-work/.claude/skills/
+cp -r /tmp/legal-workstation/modules/contract-analyze ~/my-legal-work/.claude/skills/
+cp -r /tmp/legal-workstation/modules/rule-builder ~/my-legal-work/.claude/skills/
+cp -r /tmp/legal-workstation/modules/yd-law ~/my-legal-work/.claude/skills/
+cp -r /tmp/legal-workstation/modules/qcc ~/my-legal-work/.claude/skills/
+cp -r /tmp/legal-workstation/modules/mdconverter ~/my-legal-work/.claude/skills/
+```
+
+### 2. 冷启动
+
+在工作目录下打开 Claude Code。Agent 检测到尚未配置，自动启动对话，大约 3-5 分钟：
+
+1. **种子文件提取**（可选）。给合同模板，agent 自动识别公司业务、法域、风格。模板自动归档到 `playbook/contracts/templates/`。
+2. **对话补充**。输出风格偏好、风险评级体系等。
+3. **工具测试**。实际调用验证连通性。
+4. **写入档案**。对话内容写入 `.claude/profiles/`（五条领域：公司、角色、语境、工具、输出）。
+5. **自清理**。`scripts/` 目录删除。
+
+冷启动只记**能改变模型输出行为的信息**。不记审批链和内部政策红线。想改档案说 "update my profile"。
+
+### 3. 日常使用
 
 ```
-CLAUDE.md                          # Agent 指令（人格、路由、工作区地图）
-scripts/                           # 冷启动脚本（临时，配置后自删）
-playbook/                          # 操作规程
-├── README.md                      #   使用手册
-├── process/                       #   通用底线规则（每次会话必读）
-│   ├── approach.md                #     任务判断
-│   ├── information.md             #     信息可靠
-│   └── role.md                    #     角色边界
-└── contracts/                     #   合同工作
-    ├── README.md                  #     工作流程
-    ├── review/                    #     审查规则
-    └── templates/                 #     公司模板
-.claude/
-├── profiles/                      # 空，等待冷启动写入
-└── settings.local.json
+/contract-review path/to/合同.docx    → 审核意见书 + 修订 .docx
+/contract-analyze path/to/合同.md     → 当事人画像、条款分析、冲突检测
+/rule-builder path/to/模板.docx       → 对话式问答，生成审查规则
+/record                                → 扫描会话，写入记录，可选归档
 ```
+
+- contract-review 支持 .docx 和 .pdf，附带施工合同和保密协议两份种子审查规则
+- contract-analyze 接受 Markdown，不改合同、不做法律判断
+- rule-builder 生成的规则直接写入 `playbook/contracts/review/`，contract-review 自动加载
 
 ---
 
-## 冷启动——第一次对话
+## 系统架构
 
-在这个目录下打开 Claude Code。CLAUDE.md 检测到 profiles/ 为空，自动启动冷启动对话。大约 3-5 分钟：
-
-1. **种子文件提取**（可选）。给合同模板、制度文件，agent 自动提取公司业务、法域、风格。模板自动归档到 `playbook/contracts/templates/`。
-2. **对话补充**。种子文件看不出来的——输出风格偏好、风险评级体系——聊天补充。
-3. **工具测试**。你提到的工具，agent 实际调用验证连通性。
-4. **写入档案**。对话内容写入 `.claude/profiles/`，五条领域指引：公司、角色、语境、工具、输出。
-5. **创建目录**。`sessions/`、`records/`、`archive/` 就位。
-6. **自清理**。`scripts/` 目录删除。
-
-冷启动只记**能改变模型输出行为的信息**——公司名、法域、工作语言、输出偏好。不记审批链，不记内部政策红线。条款立场在每次审查时根据具体交易判断。
-
-想改档案？说 "update my profile"。
-
----
-
-## 日常使用
-
-### 审查合同
-
-```
-/contract-review path/to/合同.docx
-```
-
-Agent 自动判断简单/复杂模式，匹配审查规则，产出审核意见书 + 修订模式 .docx。支持 .docx 和 .pdf 格式。识别到你的公司出现在当事方中时，自动以公司立场审核。
-
-目前附带两份种子审查规则：
-- 建设工程施工合同（`playbook/contracts/review/construction-contract.md`）
-- 保密协议（`playbook/contracts/review/nda.md`）
-
-### 分析合同结构
-
-```
-/contract-analyze path/to/合同.md
-```
-
-接受 Markdown 格式合同，产出结构化文档集：当事人画像、术语词典、条款分析、交叉引用映射、冲突检测。不改合同、不做法律判断。适用于需要深入理解一份复杂合同时。
-
-### 生成审查规则
-
-```
-/rule-builder path/to/模板.docx
-```
-
-从公司合同模板生成审查规则。Agent 分析模板结构，在对话中逐组向你提问（付款条款、违约责任等），你的回答直接转化为审查规则，写入 `playbook/contracts/review/`——contract-review 下次自动加载。
-
-### 记录与归档
-
-```
-/record
-```
-
-扫描已完成会话，生成工作记录，更新统计缓存。可选归档到 `archive/`。
-
----
-
-## 架构设计
+法律 AI 工作站包含三层：
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -128,15 +74,15 @@ Agent 自动判断简单/复杂模式，匹配审查规则，产出审核意见�
 │  │  playbook/        records/   archive/    │ │
 │  │  操作规程         工作记录   审查归档     │ │
 │  │                                          │ │
-│  │  sessions/        稳定性契约             │ │
-│  │  任务工作区       路径·字段·存在性        │ │
+│  │  sessions/                               │ │
+│  │  任务工作区                               │ │
 │  └─────────────────────────────────────────┘ │
 │                                               │
 │  ┌─────────────────────────────────────────┐ │
 │  │      功能模块层（松耦合 · 独立发版）     │ │
 │  │                                          │ │
 │  │  contract-review   contract-analyze      │ │
-│  │  rule-builder      [more coming...]      │ │
+│  │  rule-builder                            │ │
 │  └─────────────────────────────────────────┘ │
 │                                               │
 │  ┌─────────────────────────────────────────┐ │
@@ -148,46 +94,49 @@ Agent 自动判断简单/复杂模式，匹配审查规则，产出审核意见�
 └──────────────────────────────────────────────┘
 ```
 
-**设计原则：**
+### 设计原则
 
-1. **基础设施定义物理定律。** 路径约定、字段格式、加载规则——所有模块遵守同一套物理定律。改基础设施影响所有模块，因此变更频率远低于模块。
+1. **基础设施定义物理定律。** 路径约定、字段格式、加载规则——所有模块遵守。改基础设施影响所有模块，因此变更频率远低于模块。
 2. **模块之间互不依赖。** contract-review 不知道 contract-analyze 的存在。每个模块只依赖基础设施。
 3. **接口只有文件路径 + 字段名。** 不存在 API 调用、函数导入、RPC。模块声明"我需要 profiles 里的公司名、playbook/contracts/review/ 下的规则"，找不到就降级运行。
 
-详细设计见 `docs/concept-design.md`。
+### 路径契约
 
----
+基础设施层对各模块的承诺。稳定路径，模块可硬编码：
 
-## 外部依赖
-
-- [Claude Code](https://claude.ai/code) — 运行时
-- [agentdocx](https://github.com/lukeruc/agentdocx) — .docx 读写与修订模式（MCP server，需单独安装）
-
-功能模块（contract-review、contract-analyze、rule-builder）和工具 skill（mdconverter、yd-law、qcc）已包含在本仓库中，见下方"与其它仓库的关系"。
+| 路径 | 说明 |
+|------|------|
+| `.claude/profiles/*.md` | 用户档案（冷启动生成，1 到 N 个文件） |
+| `playbook/process/approach.md` | 任务判断规则 |
+| `playbook/process/information.md` | 信息可靠性规则 |
+| `playbook/process/role.md` | 角色边界规则 |
+| `playbook/contracts/review/` | 审查规则目录（0 到 N 个 .md） |
+| `playbook/contracts/templates/` | 公司合同模板目录 |
+| `sessions/` | 任务工作区 |
+| `records/INDEX.md` | 工作记录索引 |
+| `records/_stats/` | 统计缓存 |
 
 ---
 
 ## 与其它仓库的关系
 
-以下仓库的功能已整合进本项目，在 `modules/` 中统一开发和维护：
+以下独立仓库的功能已整合进本项目，在 `modules/` 下统一开发。成熟后提取为独立仓库，届时可通过 `git clone` 直接安装到 `.claude/skills/`。
 
 | 仓库 | 在 `modules/` 中的位置 | 说明 |
 |------|----------------------|------|
-| contract-review | `modules/contract-review/` | 合同审核主应用，EPC 三层架构 |
+| contract-review | `modules/contract-review/` | 合同审核，EPC 三层架构，双模式 |
 | contract-analyze | `modules/contract-analyze/` | 合同结构分析，PM 委托模式 |
 | rule-builder | `modules/rule-builder/` | 审查规则生成，交互式问答 |
-| mdconverter | `modules/mdconverter/` | 文档格式转换（PDF/DOCX→MD） |
+| mdconverter | `modules/mdconverter/` | 文档格式转换 |
 | yd-law | `modules/yd-law/` | 法律数据检索 |
 | qcc | `modules/qcc/` | 企业工商信息查询 |
 
-使用方式：将对应模块目录复制到工作区的 `.claude/skills/` 下即可。例如：
+---
 
-```bash
-cp -r modules/contract-review ~/my-legal-work/.claude/skills/
-cp -r modules/contract-analyze ~/my-legal-work/.claude/skills/
-```
+## 外部依赖
 
-成熟后各模块将提取为独立仓库，届时可通过 `git clone` 直接安装。模块之间互不依赖，只认基础设施的路径契约。
+- [Claude Code](https://claude.ai/code)
+- [agentdocx](https://github.com/lukeruc/agentdocx) — .docx 读写与修订（MCP server，需单独安装）
 
 ## License
 
