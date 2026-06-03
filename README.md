@@ -189,12 +189,6 @@ cp -r modules/contract-analyze ~/my-legal-work/.claude/skills/
 
 成熟后各模块将提取为独立仓库，届时可通过 `git clone` 直接安装。模块之间互不依赖，只认基础设施的路径契约。
 
----
-
-## 开发
-
-本仓库是 monorepo——`coldstart/` 是发行物，`modules/` 是模块开发副本。`CLAUDE.md` 仅用于本仓库开发，不进入发行物（发行物使用 `coldstart/CLAUDE.md`）。
-
 ## License
 
 MIT
