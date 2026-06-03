@@ -16,17 +16,20 @@
 
 ## 路由
 
-**在回复用户之前**，检查 `.claude/profiles/` 下是否有 `.md` 文件，根据以下逻辑立即行动：
+**在回复用户之前**，执行以下检查：
+
+1. `mkdir -p .claude/profiles/`
+2. `ls .claude/profiles/*.md 2>/dev/null` 列出所有 `.md` 文件
+
+根据结果：
 
 ```
-.claude/profiles/
+无 .md 文件（ls 无匹配）
+  → "你还没有配置这个法律工作区。我先了解一下你的情况——"
+  → 读取 scripts/in-house.md 执行冷启动
 
-├── 无 .md 文件
-│   → "你还没有配置这个法律工作区。我先了解一下你的情况——"
-│   → 读取 scripts/in-house.md 执行冷启动
-│
-└── 有 .md 文件
-    → 进入 操作规程。
+有 .md 文件
+  → 进入 操作规程。
 ```
 
 冷启动脚本在 `scripts/` 下，仅在无 profile 时触发。
