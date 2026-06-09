@@ -9,7 +9,7 @@ description: 工作记录与归档。扫描 sessions/ 中未记录的会话，�
 
 ## 触发方式
 
-用户输入 `/record` 触发。不自动运行，不依赖 cron。
+用户输入 `/record` 触发。
 
 ## 工作流程
 
@@ -27,72 +27,40 @@ ls -d sessions/*/ 2>/dev/null
 
 ### 3. 逐会话处理
 
-对每个未记录的 session 目录，识别其来源模块：
+对每个未记录的 session 目录，从其命名识别模块类型。Session 目录遵循 `{module}-{slug}-{timestamp}` 命名约定，前缀即模块标识。
 
-- 目录名以 `contract-review-` 开头 → 合同审核
-- 目录名以 `contract-analyze-` 开头 → 合同分析
-- 目录名以 `rule-builder-` 开头 → 规则生成
+**通用提取方式**：读取 `output/` 下的文件，查找关键信息。不同模块的产出结构不同，以下为识别启发——能在产出中找到就提取，找不到就跳过，不编造：
 
-按模块类型读取对应产出文件。
-
-#### 3a. 合同审核 session
-
-读取 `output/audit-opinion.md`（审核意见书）或 `output/audit-work-report.md`（审核工作报告），提取：
-
-- 合同名称、合同类型
-- 当事方、审核立场（代表哪一方）
-- 风险分布（高/中/低风险数量）
-- 总体风险评级
-- 主要修改点（3-5 条关键条款）
-
-#### 3b. 合同分析 session
-
-读取 `output/index.md`（分析索引），提取：
-
-- 合同名称、合同类型
-- 当事方
-- 适用法律
-- 分析覆盖的维度
-
-#### 3c. 规则生成 session
-
-读取 `output/checklist.md`（问题清单），提取：
-
-- 模板名称、合同类型
-- 代表方
-- 规则文件路径（在 playbook/contracts/review/ 下）
+- **当事方信息**：搜索合同当事方名称、角色描述
+- **类型标签**：从 session 目录前缀推导
+- **摘要**：从产出文件的开头段落或执行摘要中提取 3-5 句关键信息
+- **结构化字段**（如存在）：风险评级、风险分布、适用法律——仅当产出文件中明确出现时提取
 
 ### 4. 写入记录
 
 #### 4a. 创建单条记录
 
-写入 `records/{YYYY-MM-DD}-{slug}.md`，格式：
+写入 `records/{YYYY-MM-DD}-{slug}.md`。Frontmatter 字段按实际能提取到的填写，缺失字段不写入（不要填 `-`）：
 
 ```markdown
 ---
-type: {review / analyze / rule-build}
+type: {模块类型}
 date: {YYYY-MM-DD}
-party: {当事方名称}
-party_role: {当事方角色}
-stance: {审核立场}
-mode: {simple / complex}
-risk_rating: {总体风险}
-risk_high: {N}
-risk_medium: {N}
-risk_low: {N}
 session: {session 目录路径}
+{以下字段仅在产出中找到时写入：}
+party: {当事方名称}
+stance: {审核立场}
+risk_rating: {总体风险}
 ---
 
 # {类型标签} — {YYYY-MM-DD} {合同/模板名}
 
-{3-5 句话的自然语言摘要，覆盖：什么合同、发现了什么、
-关键结论。让人不用打开 session 目录就能知道这次干了什么。}
+{3-5 句话的自然语言摘要}
 ```
 
-- `type`：`review`（合同审核）、`analyze`（合同分析）、`rule-build`（规则生成）
-- `risk_rating`：仅合同审核有（🔴🟠🟡🟢 + 文字），其他类型填 `-`
-- `mode`：仅合同审核有（simple/complex），其他类型填 `-`
-- 无法从 session 产物中提取的字段填 `-`，不编造
+- `type` 从 session 目录前缀映射
+- 其他字段均可选——有什么写什么，没有就不写
+- 不编造数据，不假设字段结构
 
 #### 4b. 追加 INDEX
 
@@ -113,22 +81,9 @@ INDEX.md 初始模板（首次运行时创建）：
 
 #### 4c. 更新统计缓存
 
-对 `records/_stats/{type}.json`，读取现有数据（如存在），与新记录合并更新：
+对 `records/_stats/{type}.json`，读取现有数据，与新记录合并。统计数据仅聚合记录中实际存在的字段——例如 `risk_high`/`risk_medium`/`risk_low` 仅当记录中存在时才参与统计。字段不存在不报错，跳过即可。
 
-```json
-{
-  "{contract_type}": {
-    "count": {累计次数},
-    "last_review": "{最近日期}",
-    "avg_risk_high": {平均高风险数},
-    "avg_risk_medium": {平均中风险数},
-    "avg_risk_low": {平均低风险数},
-    "common_issues": ["{出现 3+ 次的条款问题}", ...]
-  }
-}
-```
-
-`contract_type` 从 session 产物中提取。`common_issues` 仅当某问题在同类合同中累计出现 3 次以上时才列出。
+统计粒度按 `type` 字段（模块类型）分组。`type` 字段来自于 session 目录命名前缀，不需预定义枚举——新模块创建新前缀时自动生成新的统计分组。
 
 ### 5. 询问归档
 

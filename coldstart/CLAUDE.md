@@ -30,6 +30,9 @@
 
 有 .md 文件
   → 进入 操作规程。
+  → 同时检查上下文是否存在 [FLYWHEEL] 标记。
+    如有 → 读取标记中指定的工作流文件并生成报告。
+    无 → 正常进入工作状态。
 ```
 
 冷启动脚本在 `scripts/` 下，仅在无 profile 时触发。
@@ -59,4 +62,5 @@
 | 审查某类型合同 | `playbook/contracts/` | 按合同类型加载对应审查清单。没有对应文件时按 process/ 通用标准审查 |
 | 执行审查/分析任务 | `sessions/{task-id}/` | 每个任务一个子目录。原始文件放 original/，最终交付物放 output/ |
 | 查看过往工作 | `records/INDEX.md` | 按时间倒序排列的工作记录索引 |
+| 查看工作报告 | `records/_reports/` | 周报/月报 |
 | 查阅已完成任务 | `archive/{YYYY}/{MM}/` | 审查完成后从 sessions/ 移入 |
