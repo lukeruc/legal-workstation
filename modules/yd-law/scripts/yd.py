@@ -39,10 +39,12 @@ def api_post(path, body, api_key):
     req.add_header("Content-Type", "application/json")
     req.add_header("X-API-Key", api_key)
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         return {"http_error": e.code, "message": e.reason}
+    except urllib.error.URLError as e:
+        return {"error": "network_error", "message": str(e.reason)}
 
 
 def api_get(path, params, api_key):
@@ -51,10 +53,12 @@ def api_get(path, params, api_key):
     req = urllib.request.Request(url, method="GET")
     req.add_header("X-API-Key", api_key)
     try:
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         return {"http_error": e.code, "message": e.reason}
+    except urllib.error.URLError as e:
+        return {"error": "network_error", "message": str(e.reason)}
 
 
 def add_case_search_args(sub):
@@ -320,6 +324,9 @@ def main():
             result = api_post("/open/rh_ptal_search",
                               build_case_search_body(args), api_key)
         elif args.action == "detail":
+            if not args.id and not args.ah:
+                print("错误: case detail 需要 --id 或 --ah 至少指定其一", file=sys.stderr)
+                sys.exit(1)
             params = {}
             if args.id:
                 params["id"] = args.id

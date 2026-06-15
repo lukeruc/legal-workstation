@@ -40,7 +40,7 @@ ls -d sessions/*/ 2>/dev/null
 
 #### 4a. 创建单条记录
 
-写入 `records/{YYYY-MM-DD}-{slug}.md`。Frontmatter 字段按实际能提取到的填写，缺失字段不写入（不要填 `-`）：
+写入 `records/{YYYY-MM-DD}-{slug}.md`。Frontmatter 字段按实际能提取到的填写，缺失字段不写入：
 
 ```markdown
 ---
@@ -51,6 +51,14 @@ session: {session 目录路径}
 party: {当事方名称}
 stance: {审核立场}
 risk_rating: {总体风险}
+mode: {simple / complex}（仅 contract-review 产出中有此信息时写入）
+risk_high: {N}（仅当产出中明确列出高风险条款数量时写入）
+risk_medium: {N}
+risk_low: {N}
+clauses:（仅当产出中有条款级风险数据时写入）
+  - rule: {条款维度}
+    risk: {high / medium / low}
+    note: {简要说明}
 ---
 
 # {类型标签} — {YYYY-MM-DD} {合同/模板名}
@@ -59,8 +67,8 @@ risk_rating: {总体风险}
 ```
 
 - `type` 从 session 目录前缀映射
-- 其他字段均可选——有什么写什么，没有就不写
-- 不编造数据，不假设字段结构
+- Frontmatter 字段均可选——有什么写什么，没有就不写。编造数据比缺失更坏
+- `clauses` 为数组，每条含 `rule`（条款维度名）、`risk`（风险级别）、`note`（简要说明）
 
 #### 4b. 追加 INDEX
 
@@ -123,7 +131,7 @@ mv sessions/{session-dir} archive/{YYYY}/{MM}/
 - **session 目录不完整**（缺少关键产出文件）：跳过该 session，报告"跳过 {session}：缺少 {文件}"
 - **_stats/ 目录不存在**：`mkdir -p` 创建
 - **同一 session 重复扫描**：INDEX 中已有该 session ID 则跳过
-- **产出文件无法提取足够信息**：用 `-` 占位，记录一条基本信息。不编造数据
+- **产出文件无法提取足够信息**：记录基本信息（type、date、session）。INDEX 表格无值列填 `-`，frontmatter 不写缺失字段。不编造数据
 
 ## 设计原则
 

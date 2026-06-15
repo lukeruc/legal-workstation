@@ -41,9 +41,9 @@ description: 合同审核 skill。仅通过 /contract-review 命令触发。产�
 
 不做自动格式转换——.doc 到 .docx 的转换可能引入格式错乱，应由用户在自己的办公软件中完成。
 
-### 2. 创建会话目录并进入
+### 2. 创建会话目录
 
-在当前 workspace 下创建会话目录，并 `cd` 进入。此后所有文件操作均在此会话目录下进行。
+在当前 workspace 下创建会话目录。文件操作使用 `${SESSION_DIR}/` 前缀指定会话目录内路径，基础设施路径（`playbook/`、`.claude/profiles/`）使用工作区根相对路径。
 
 合同名从原文件名提取（去掉扩展名），时间戳为当前时刻。
 
@@ -51,19 +51,18 @@ description: 合同审核 skill。仅通过 /contract-review 命令触发。产�
 SESSION_DIR="sessions/contract-review-{合同名}-{yyyymmdd-hhmm}"
 mkdir -p "${SESSION_DIR}"/{original,output,_internal/{architect-materials,task-records,preliminary-design}}
 cp "{用户合同路径}" "${SESSION_DIR}"/original/
-cd "${SESSION_DIR}"
 ```
 
 ### 3. 格式转化
 
-调用 `md-converter` skill 将 `original/{合同文件名}` 转为 Markdown，输出为会话根目录下的 `contract.md`。
+调用 `mdconverter` skill 将 `${SESSION_DIR}/original/{合同文件名}` 转为 Markdown，输出为 `${SESSION_DIR}/contract.md`。
 
 ### 4. 获取字符数
 
 运行本 skill 目录的 `scripts/char-count.sh` 获取纯文本字符数：
 
 ```bash
-bash {SKILL_DIR}/scripts/char-count.sh contract.md
+bash {SKILL_DIR}/scripts/char-count.sh "${SESSION_DIR}/contract.md"
 ```
 
 记录结果（如 8234），后续步骤用做模式建议的依据。**不做分支决策**——模式由用户在下一步确认。
@@ -166,7 +165,7 @@ bash {SKILL_DIR}/scripts/char-count.sh contract.md
 | 脚本 | 用途 | 用法 |
 |------|------|------|
 | `char-count.sh` | 纯文本字符数统计 | `bash {SKILL_DIR}/scripts/char-count.sh contract.md` |
-| `scan-structure.py` | 中英文合同编号体系机械扫描，输出 JSON | `python {SKILL_DIR}/scripts/scan-structure.py contract.md _internal/scan-result.json` |
+| `scan-structure.py` | 中英文合同编号体系机械扫描，输出 JSON | `python {SKILL_DIR}/scripts/scan-structure.py "${SESSION_DIR}/contract.md" "${SESSION_DIR}/_internal/scan-result.json"` |
 
 ## 工具注入参考
 

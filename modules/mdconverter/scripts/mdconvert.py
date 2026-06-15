@@ -24,23 +24,11 @@ def find_file(name: str) -> Path | None:
     if Path(name).is_absolute():
         if Path(name).exists():
             return Path(name)
-        # 绝对路径但文件不存在（可能是编码问题），尝试在目标目录模糊匹配
-        parent = Path(name).parent
-        target_name = Path(name).name
-        if parent.exists():
-            for f in parent.iterdir():
-                # 字节级匹配（绕过编码问题）
-                try:
-                    target_bytes = target_name.encode('utf-8', errors='ignore')
-                    f_bytes = f.name.encode('utf-8')
-                    if target_bytes and f_bytes:
-                        # 检查共同字节数
-                        common = set(target_bytes) & set(f_bytes)
-                        if len(common) > 10:
-                            return f
-                except:
-                    pass
-        return None
+        # Absolute path doesn't exist — raise explicit error instead of fuzzy matching
+        raise FileNotFoundError(
+            f"文件不存在: {name}\n"
+            f"请检查路径是否正确。"
+        )
 
     # 相对路径 - 直接匹配
     direct = cwd / name

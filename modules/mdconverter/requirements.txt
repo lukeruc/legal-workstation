@@ -1,0 +1,12 @@
+# PDF text extraction (optional — for text-based PDFs)
+pymupdf>=1.25.0
+pymupdf4llm>=0.0.0
+
+# Image/vision PDF processing (optional — for image-based PDFs)
+dashscope>=1.0.0
+
+# DOCX conversion (optional)
+pandoc>=3.0
+
+# DOC conversion (optional — requires LibreOffice)
+# libreoffice

@@ -26,7 +26,8 @@
 ```
 无 .md 文件（ls 无匹配）
   → "你还没有配置这个法律工作区。我先了解一下你的情况——"
-  → 读取 scripts/in-house.md 执行冷启动
+  → 读取 .claude/archived-scripts/coldstart/in-house.md 执行冷启动（如已归档）
+  → 如归档文件也不存在：引导用户重新 clone coldstart
 
 有 .md 文件
   → 进入 操作规程。
@@ -35,7 +36,7 @@
     无 → 正常进入工作状态。
 ```
 
-冷启动脚本在 `scripts/` 下，仅在无 profile 时触发。
+冷启动后脚本归档至 `.claude/archived-scripts/coldstart/`，仅在无 profile 时触发。
 
 ---
 

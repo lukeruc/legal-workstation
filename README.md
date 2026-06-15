@@ -16,7 +16,6 @@
 mkdir ~/my-legal-work && cd ~/my-legal-work
 git clone https://github.com/lukeruc/legal-workstation.git /tmp/legal-workstation
 cp -r /tmp/legal-workstation/coldstart/. ./
-rm -rf /tmp/legal-workstation
 ```
 
 功能模块和工具 skill 在仓库 `modules/` 下，按需复制到 `.claude/skills/`：
@@ -25,9 +24,12 @@ rm -rf /tmp/legal-workstation
 cp -r /tmp/legal-workstation/modules/contract-review ~/my-legal-work/.claude/skills/
 cp -r /tmp/legal-workstation/modules/contract-analyze ~/my-legal-work/.claude/skills/
 cp -r /tmp/legal-workstation/modules/rule-builder ~/my-legal-work/.claude/skills/
+cp -r /tmp/legal-workstation/modules/log-agent ~/my-legal-work/.claude/skills/
+cp -r /tmp/legal-workstation/modules/flywheel ~/my-legal-work/.claude/skills/
 cp -r /tmp/legal-workstation/modules/yd-law ~/my-legal-work/.claude/skills/
 cp -r /tmp/legal-workstation/modules/qcc ~/my-legal-work/.claude/skills/
 cp -r /tmp/legal-workstation/modules/mdconverter ~/my-legal-work/.claude/skills/
+rm -rf /tmp/legal-workstation
 ```
 
 ### 2. 冷启动
@@ -86,8 +88,9 @@ cp -r /tmp/legal-workstation/modules/mdconverter ~/my-legal-work/.claude/skills/
 │  └─────────────────────────────────────────┘ │
 │                                               │
 │  ┌─────────────────────────────────────────┐ │
-│  │        工具层（MCP · 即插即用）          │ │
-│  │  agentdocx  mdconverter  yd-law  qcc    │ │
+│  │        工具层（skill / CLI / MCP）        │ │
+│  │  agentdocx(MCP)  mdconverter(skill+CLI)  │ │
+│  │  yd-law(skill+CLI)  qcc(skill+CLI)       │ │
 │  └─────────────────────────────────────────┘ │
 │                                               │
 │  Claude Code（运行时）                        │
@@ -135,8 +138,18 @@ cp -r /tmp/legal-workstation/modules/mdconverter ~/my-legal-work/.claude/skills/
 
 ## 外部依赖
 
-- [Claude Code](https://claude.ai/code)
-- [agentdocx](https://github.com/lukeruc/agentdocx) — .docx 读写与修订（MCP server，需单独安装）
+### 必须
+
+- [Claude Code](https://claude.ai/code) — 运行时
+
+### 按需（各模块有各自的依赖）
+
+| 模块 | 依赖 | 说明 |
+|------|------|------|
+| agentdocx | [agentdocx](https://github.com/lukeruc/agentdocx) | MCP server，.docx 读写与修订 |
+| mdconverter | pymupdf, pymupdf4llm, dashscope, pandoc | `pip install -r modules/mdconverter/requirements.txt` |
+| qcc | `qcc` 可执行文件 | 企业工商信息查询 CLI |
+| yd-law | `YD_KEY` 环境变量 | 法律数据库 API key，`export YD_KEY="sk-..."` |
 
 ## License
 

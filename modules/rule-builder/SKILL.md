@@ -45,7 +45,7 @@ cd "${SESSION_DIR}"
 
 ### 3. 格式转化
 
-调用 `md-converter` skill 将 `original/{模板文件名}` 转为 Markdown，输出为会话根目录下的 `template.md`。
+调用 `mdconverter` skill 将 `original/{模板文件名}` 转为 Markdown，输出为会话根目录下的 `template.md`。
 
 ### 4. 审核立场确认
 
@@ -181,6 +181,8 @@ T-RB-S04 产出的 `output/checklist.md` 是中间产物，不是给用户手动
 
 **产出**：`playbook/contracts/review/{规则文件名}.md`
 
+**规则文件命名约束**：文件名必须包含立场后缀，格式为 `{合同类型}-{立场}.md`（如 `construction-contractor.md`、`nda-disclose.md`）。写入前检测同名文件是否已存在——若存在且立场不同，提示用户调整文件名以避免覆盖。
+
 **验收**：检查检查项是否机械可判定（有具体数值/标准），是否遗漏了用户已回答的问题。
 
 ## 交付
@@ -245,14 +247,14 @@ T-RB-S04 产出的 `output/checklist.md` 是中间产物，不是给用户手动
 
 - 用户提交非 .docx 格式文件（拒绝处理）
 - 审核立场未确认（必须确认）
-- md-converter 格式转化失败
+- mdconverter 格式转化失败
 - Task Agent 产出验收不通过且你已经无法通过调整指令修复
 
 ## 工具注入参考
 
 | 调用者 | 注入工具 |
 |--------|---------|
-| Bootstrap（步骤 3） | `md-converter` |
+| Bootstrap（步骤 3） | `mdconverter` |
 | Bootstrap（阶段 1 预扫描） | `scan-structure.py`（本地脚本，位于 `scripts/`） |
 | Structure（T-RB-S01） | 无工具，纯 Markdown 文本处理 |
 | Conditions（T-RB-S02） | 无工具，纯 Markdown 文本处理 |

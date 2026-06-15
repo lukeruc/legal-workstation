@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pymupdf4llm
-
 
 def convert_pdf(input_path: str | Path, output: str | Path | None = None) -> str:
     """
@@ -20,6 +18,13 @@ def convert_pdf(input_path: str | Path, output: str | Path | None = None) -> str
         FileNotFoundError: If the input file does not exist.
         RuntimeError: If conversion fails.
     """
+    try:
+        import pymupdf4llm
+    except ImportError:
+        raise RuntimeError(
+            "pymupdf4llm 未安装。请运行: pip install pymupdf4llm"
+        ) from None
+
     input_path = Path(input_path).resolve()
     if not input_path.exists():
         raise FileNotFoundError(f"Input file not found: {input_path}")

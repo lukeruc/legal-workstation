@@ -15,7 +15,7 @@
 **先运行 scan-structure.py 做预扫描**（跳过 Agent 第一遍通读）：
 
 ```bash
-python {SKILL_DIR}/scripts/scan-structure.py contract.md _internal/scan-result.json
+python {SKILL_DIR}/scripts/scan-structure.py "${SESSION_DIR}/contract.md" "${SESSION_DIR}/_internal/scan-result.json"
 ```
 
 然后创建 T-S01：读取 `agent/task-structure.md`，将其中的 System Prompt 直接注入 sub-agent，将 Task Spec 作为任务下达。

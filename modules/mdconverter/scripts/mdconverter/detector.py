@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import fitz  # pymupdf
-
 
 def is_image_based_pdf(
     input_path: str | Path,
@@ -28,6 +26,13 @@ def is_image_based_pdf(
     input_path = Path(input_path).resolve()
     if not input_path.exists():
         raise FileNotFoundError(f"Input file not found: {input_path}")
+
+    try:
+        import fitz  # pymupdf
+    except ImportError:
+        raise RuntimeError(
+            "pymupdf 未安装。请运行: pip install pymupdf"
+        ) from None
 
     try:
         doc = fitz.open(input_path)

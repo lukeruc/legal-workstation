@@ -27,8 +27,8 @@ def _get_api_key() -> str:
     """获取 Dashscope API Key."""
     if not DASHSCOPE_API_KEY:
         raise RuntimeError(
-            "DASHSCOPE_API_KEY not found. Please create a .env file with your API key. "
-            "See .env.example for reference."
+            "DASHSCOPE_API_KEY not found. Set the environment variable: "
+            "export DASHSCOPE_API_KEY=\"sk-...\""
         )
     return DASHSCOPE_API_KEY
 
@@ -244,7 +244,7 @@ def convert_vision_pdf(
         # 移除第一个分页符
         markdown_content = "\n\n".join(markdown_parts)
         if markdown_content.startswith("---\n\n"):
-            markdown_content = markdown_content[4:]  # 移除开头的 "---\n\n"
+            markdown_content = markdown_content[5:]  # 移除开头的 "---\n\n"
 
         # 写入文件
         if output:

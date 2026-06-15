@@ -94,7 +94,7 @@
    ```
 
    执行：
-   - `mkdir -p sessions/ records/_stats/ archive/`
+   - `mkdir -p sessions/ records/_stats/ records/_reports/ archive/`
    - `touch records/INDEX.md`
    - 确认 playbook/、.claude/、CLAUDE.md 存在。任何缺失项报告用户
 
@@ -106,9 +106,10 @@
    > 1. 试试看效果——给我一份合同，我按你的档案来分析
    > 2. 想修改的话，说 "update my profile" 随时可以调整
 
-10. **清理**。冷启动完成后，面试脚本没有存在价值——面试已结束，"update my profile" 是逐项更新而非重跑面试。
+10. **清理**。冷启动完成后归档面试脚本——面试已结束，"update my profile" 是逐项更新而非重跑面试。但保留脚本以备 profiles 被清空时重跑。
 
-   - 删除 `scripts/` 整个目录
+   - `mkdir -p .claude/archived-scripts/ && mv scripts/ .claude/archived-scripts/coldstart/`
+   - 告知用户：如需重新配置，重新打开 Claude Code 即可自动检测并重跑冷启动
 
 ### 纯对话模式（无种子文件时）
 
